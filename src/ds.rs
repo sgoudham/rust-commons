@@ -1,11 +1,7 @@
 use std::cmp::Ordering;
-use std::collections::VecDeque;
+use std::vec::IntoIter;
 
 type Child<T> = Option<Box<Node<T>>>;
-
-pub struct IntoPreOrderIter<T>(T);
-pub struct IntoInOrderIter<T>(T);
-pub struct IntoPostOrderIter<T>(T);
 
 #[derive(Debug)]
 pub struct BST<T: Ord> {
@@ -84,27 +80,27 @@ impl<T: Ord> Node<T> {
         }
     }
 
-    fn pre_order_traversal(node: Child<T>, pre_order: &mut VecDeque<T>) {
+    fn pre_order_traversal(node: Child<T>, pre_order: &mut Vec<T>) {
         if let Some(node) = node {
-            pre_order.push_front(node.value);
+            pre_order.push(node.value);
             Self::pre_order_traversal(node.left, pre_order);
             Self::pre_order_traversal(node.right, pre_order);
         }
     }
 
-    fn in_order_traversal(node: Child<T>, in_order: &mut VecDeque<T>) {
+    fn in_order_traversal(node: Child<T>, in_order: &mut Vec<T>) {
         if let Some(node) = node {
             Self::in_order_traversal(node.left, in_order);
-            in_order.push_front(node.value);
+            in_order.push(node.value);
             Self::in_order_traversal(node.right, in_order);
         }
     }
 
-    fn post_order_traversal(node: Child<T>, post_order: &mut VecDeque<T>) {
+    fn post_order_traversal(node: Child<T>, post_order: &mut Vec<T>) {
         if let Some(node) = node {
             Self::post_order_traversal(node.left, post_order);
             Self::post_order_traversal(node.right, post_order);
-            post_order.push_front(node.value);
+            post_order.push(node.value);
         }
     }
 }
@@ -148,46 +144,22 @@ impl<T: Ord> BST<T> {
         }
     }
 
-    pub fn into_pre_order_iter(self) -> IntoPreOrderIter<VecDeque<T>> {
-        let mut pre_order = VecDeque::new();
+    pub fn into_pre_order_iter(self) -> IntoIter<T> {
+        let mut pre_order = Vec::new();
         Node::pre_order_traversal(self.root, &mut pre_order);
-        IntoPreOrderIter(pre_order)
+        pre_order.into_iter()
     }
 
-    pub fn into_in_order_iter(self) -> IntoInOrderIter<VecDeque<T>> {
-        let mut in_order = VecDeque::new();
+    pub fn into_in_order_iter(self) -> IntoIter<T> {
+        let mut in_order = Vec::new();
         Node::in_order_traversal(self.root, &mut in_order);
-        IntoInOrderIter(in_order)
+        in_order.into_iter()
     }
 
-    pub fn into_post_order_iter(self) -> IntoPostOrderIter<VecDeque<T>> {
-        let mut post_order = VecDeque::new();
+    pub fn into_post_order_iter(self) -> IntoIter<T> {
+        let mut post_order = Vec::new();
         Node::post_order_traversal(self.root, &mut post_order);
-        IntoPostOrderIter(post_order)
-    }
-}
-
-impl<T: Ord> Iterator for IntoPreOrderIter<VecDeque<T>> {
-    type Item = T;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.pop_back()
-    }
-}
-
-impl<T: Ord> Iterator for IntoInOrderIter<VecDeque<T>> {
-    type Item = T;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.pop_back()
-    }
-}
-
-impl<T: Ord> Iterator for IntoPostOrderIter<VecDeque<T>> {
-    type Item = T;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.pop_back()
+        post_order.into_iter()
     }
 }
 
